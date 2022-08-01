@@ -167,6 +167,10 @@ def computer_step_hard_X(board):
                 board[z] = "X"
                 step += 1
                 return True
+            if board[x] == "X" and board[z] == "X" and board[y] == "-":
+                board[y] = "X"
+                step += 1
+                return True
             
     #step 4 
     if step == 4:
