@@ -211,12 +211,20 @@ class TicTacToe:
 
         #step 2
         if self.step == 2:
+            between = [1,3,5,7]
             corners = [0, 2, 6, 8]
-            for corner in corners:
-                if self.board[corner] == '-':
-                    self.board[corner] = 'O'
-                    self.step += 1
-                    return True
+            if self.board[4] == "O":
+                for bet in between:
+                    if self.board[bet] == "-":
+                        self.board[bet] = "O"
+                        self.step += 1
+                        return True
+            else:
+                for corner in corners:
+                    if self.board[corner] == '-':
+                        self.board[corner] = 'O'
+                        self.step += 1
+                        return True
             
         #step 3 or 4
         if self.step >= 3:
@@ -227,36 +235,17 @@ class TicTacToe:
             self.step += 1
             return True
 
-'''
+
 board = ["-", "-", "-",
         "-", "-", "-",
         "-", "-", "-"]
-
 player = "-"
-
 while player not in ['X', 'O']:
     player = input("Would you like to be X or O?\n")
 complexitygame = '-'
 while complexitygame not in ['easy', 'hard']:
     complexitygame = input("What mode do you want to play, easy or hard?\n")
-'''
-
-# if Ui_MainWindow1.radioButton_easy.isChecked():
-#     complexitygame = "easy"
-# else:
-#     complexitygame = "hard"
-
-# if Ui_MainWindow2.radioButton_x.isChecked():
-#     player = "X"
-# else:
-#     player = "O"
-
-
-
-#tictactoe = TicTacToe(player,complexitygame,board)
-
-'''
-
+tictactoe = TicTacToe(player,complexitygame,board)
 if tictactoe.player == 'X' and tictactoe.complexitygame == "easy":
     while tictactoe.gameRunning:
         tictactoe.printBoard()
@@ -318,5 +307,4 @@ elif tictactoe.player == 'O' and tictactoe.complexitygame == "hard":
             break
         tictactoe.checkIfTie()
 
-'''
 
