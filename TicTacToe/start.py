@@ -53,22 +53,14 @@ class Ui_MainWindow(object):
         self.nextpage = Ui_MainWindow_xo()
         self.nextpage.setupUi(MainWindow)
         MainWindow.show()
-        # self.nextpage.player = self.nextpage.returnValue()
-        # print(self.nextpage.player)
         self.nextpage.pushButton.clicked.connect(self.gamePageOpen)
 
 
 
     def gamePageOpen(self):
         self.nextpage.player = self.nextpage.returnValue()
-        self.gamepage = Ui_MainWindow_game()
+        self.gamepage = Ui_MainWindow_game(self.secondPage.complexity,self.nextpage.player)
         self.gamepage.setupUi(MainWindow)
-        #print(self.nextpage.returnValue())
-        #print(self.secondPage.returnValue())
-        #print(self.nextpage.returnValue())
-        self.gamepage.complexity = self.secondPage.complexity
-        self.gamepage.player = self.nextpage.player
-        #print(self.gamepage.complexity,self.gamepage.player)
         MainWindow.show()
 
 

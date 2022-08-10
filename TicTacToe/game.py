@@ -17,6 +17,26 @@ import time
 
 
 class Ui_MainWindow_game(object):
+    def __init__(self,complexity,player) -> None:
+        self.player = player
+        self.complexity = complexity
+        if self.player == "X":
+            self.computer = "O"
+        else:
+            self.computer = "X"
+        self.row_triples = [
+            (0, 1, 2),
+            (3, 4, 5),
+            (6, 7, 8),
+            (0, 3, 6),
+            (1, 4, 7),
+            (2, 5, 8),
+            (0, 4, 8),
+            (2, 4, 6)
+        ]
+        self.step = 1
+        
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(400, 600)
@@ -101,26 +121,12 @@ class Ui_MainWindow_game(object):
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-        
-        self.buttonList_text=[self.pushButton_1.text(),self.pushButton_2.text(), self.pushButton_3.text(), self.pushButton_4.text(),
-                        self.pushButton_5.text(),self.pushButton_6.text(), self.pushButton_7.text(), self.pushButton_8.text(), 
-                        self.pushButton_9.text()]
         self.buttonList=[self.pushButton_1,self.pushButton_2, self.pushButton_3, self.pushButton_4,
                         self.pushButton_5,self.pushButton_6, self.pushButton_7, self.pushButton_8, 
                         self.pushButton_9]
-        self.complexity = ""
-        self.player = ""
-        self.row_triples = [
-            (0, 1, 2),
-            (3, 4, 5),
-            (6, 7, 8),
-            (0, 3, 6),
-            (1, 4, 7),
-            (2, 5, 8),
-            (0, 4, 8),
-            (2, 4, 6)
-        ]
+        if self.player == "O":
+            self.buttonList[4].setText(self.computer)
+            self.step += 1
         
         
         self.pushButton_1.clicked.connect(lambda: self.clicker(0))
@@ -133,13 +139,30 @@ class Ui_MainWindow_game(object):
         self.pushButton_8.clicked.connect(lambda: self.clicker(7))
         self.pushButton_9.clicked.connect(lambda: self.clicker(8))
         self.pushButton_10.clicked.connect(self.clicker_play_again)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "TicTacToe"))
+        #self.pushButton_5.setText(_translate("MainWindow", "X"))
+        self.pushButton_10.setText(_translate("MainWindow", "Play again"))
     
-    def computer_step(self):
-        if self.player == "X":
-            self.computer = "O"
-        else:
-            self.computer = "X"
+    # def computer_step(self):
+    #     if self.player == "X":
+    #         self.computer = "O"
+    #     else:
+    #         self.computer =  "X"
+        
+    def myvar(self):
+        print(self.player,self.computer,self.complexity,self.row_triples,self.step)
     
+    def clicker_play_again(self):
+        for i in self.buttonList:
+            i.setText("")
+        self.label.setText("")
+        self.step = 1
+        if self.player == "O":
+            self.buttonList[4].setText(self.computer)
+            self.step += 1
     
     def clicker(self, b):
         if self.buttonList[b].text() == "":
@@ -149,14 +172,194 @@ class Ui_MainWindow_game(object):
             font.setWeight(75)
             self.buttonList[b].setFont(font)
             self.buttonList[b].setText(self.player)
-            # print(self.player, self.complexity)
-            if not self.checkifwin():
-                self.computer_step()
+            if self.checkifwin() or self.checkIfTie():
+                return 
+            else:
+                print(self.step)
+                if self.complexity == "easy":
+                    self.computer_step_easy()
+                    self.checkifwin()
+                    self.checkIfTie()
+                elif self.player == "X" and self.complexity == "hard":
+                    self.computer_step_hard_O()
+                    self.checkifwin()
+                    self.checkIfTie()
+                elif self.player == "O" and self.complexity == "hard":
+                    self.computer_step_hard_X()
+                    self.checkifwin()
+                    self.checkIfTie()
+        self.step += 1
 
-                if self.complexity == "hard":
-                    self.easyGame(True)
-                else:
-                    self.easyGame(False)
+    
+    def checkIfTie(self):
+        btn_text_list = []
+        for i in self.buttonList:
+            btn_text_list.append(i.text())
+        
+        if "" not in btn_text_list:
+            self.label.setText("It is a tie!")
+            # time.sleep(3)
+            # self.clicker_play_again()
+            return True
+        return False
+
+
+    def checkifwin(self):
+        for triple in self.row_triples:
+            x, y, z = triple
+            if self.buttonList[x].text() == self.buttonList[y].text() and self.buttonList[y].text() == self.buttonList[z].text() and self.buttonList[x].text() != '':
+                self.label.setText(f"The winner is {self.buttonList[y].text()}")
+                # time.sleep(3)
+                # self.clicker_play_again()
+                return True
+        return False
+
+    def computer_step_easy(self):
+        while True:
+            position = random.randint(0, 8)
+            if self.buttonList[position].text() == "":
+                self.buttonList[position].setText(self.computer)
+                break
+        
+
+    def check_computer_win(self):
+        for triple in self.row_triples:
+            x, y, z = triple
+            vals = sorted([self.buttonList[x].text(), self.buttonList[y].text(), self.buttonList[z].text()])
+            if vals[0] == '' and vals[1] == vals[2] == self.computer:
+                if self.buttonList[y].text() == '':
+                    x = y
+                if self.buttonList[z].text() == '':
+                    x = z
+                self.buttonList[x].setText(self.computer)
+                return True
+        return False
+    
+    def check_player_win(self):
+        for triple in self.row_triples:
+            x, y, z = triple
+            vals = sorted([self.buttonList[x].text(), self.buttonList[y].text(), self.buttonList[z].text()])
+            if vals[0] == '' and vals[1] == vals[2] == self.player:
+                if self.buttonList[y].text() == '':
+                    x = y
+                if self.buttonList[z].text() == '':
+                    x = z
+                if self.buttonList[x].text() == "":
+                    self.buttonList[x].setText(self.computer)
+                    return True
+        return False
+
+    #computer plays hard with X
+    def computer_step_hard_X(self):
+        if self.check_computer_win():
+            return True
+        elif self.check_player_win():
+            return True
+
+        
+        #step 1
+        if self.step == 1:
+            self.buttonList[4].setText("X")
+            return True
+
+        #step 2
+        if self.step == 2:
+            corners = [0, 2, 6, 8]
+            for corner in corners:
+                if self.buttonList[corner].text() == 'O':
+                    self.buttonList[8 - corner].setText('X')
+                    return True
+
+            if self.buttonList[1].text() == "O" or self.buttonList[7].text() == 'O':
+                x = random.choice([3,5])
+                self.buttonList[x].setText('X')
+                return True
+            elif self.buttonList[3].text() == "O" or self.buttonList[5].text() == "O":
+                x = random.choice([1,7])
+                self.buttonList[x].setText('X')
+                return True
+
+        
+        #step 3
+        if self.step == 3:
+            combinatios = [
+                (4, 3, 0),
+                (4, 3, 6),
+                (4, 1, 0),
+                (4, 1, 2),
+                (4, 5, 2),
+                (4, 5, 8),
+                (4, 7, 8),
+                (4, 7, 6)
+            ]
+            for (x, y, z) in combinatios:
+                if self.buttonList[x].text() == "X" and self.buttonList[y].text() == "X" and self.buttonList[z].text() == "":
+                    self.buttonList[z].setText('X')
+                    return True
+                
+                if self.buttonList[x].text() == "X" and self.buttonList[z].text() == "X" and self.buttonList[y].text() == "":
+                    self.buttonList[y].setText('X')
+                    return True
+                
+        #step 4 
+        if self.step == 4:
+            for i in range(len(self.buttonList)):
+                if self.buttonList[i].text() == "":
+                    self.buttonList[i].setText('X')
+                    break
+            # self.step += 1
+            return True
+        
+        
+        #step 5
+        if self.step == 5:
+            for i in range(len(self.buttonList)):
+                if self.buttonList[i].text() == "":
+                    self.buttonList[i].setText('X')
+                    break
+            return True
+
+    def computer_step_hard_O(self):
+        if self.check_computer_win():
+            return True
+        elif self.check_player_win():
+            return True
+
+        #step 1
+        if self.step == 1:
+            if self.buttonList[4].text() == "":
+                self.buttonList[4].setText('O')
+                return True
+            else:
+                x = random.choice([0, 2, 6, 8])
+                self.buttonList[x].setText('O')
+                return True
+
+        #step 2
+        if self.step == 2:
+            corners = [0, 2, 6, 8]
+            for corner in corners:
+                if self.buttonList[corner].text() == '':
+                    self.buttonList[corner].setText('O')
+                    return True
+            
+        #step 3 or 4
+        if self.step >= 3:
+            for i in range(len(self.buttonList)):
+                if self.buttonList[i].text() == "":
+                    self.buttonList[i].setText('O')
+                    break
+            return True
+    
+
+
+class logic:
+    def __init__(self,player,computer,complexity,buttonList):
+        self.player = player
+        self.computer = computer
+        self.complexity = complexity
+        self.buttonList = buttonList
+        
 
     def easyGame(self, gameOrder):
         if gameOrder:
@@ -177,14 +380,6 @@ class Ui_MainWindow_game(object):
             i.setText("")
         self.label.setText("")
         self.step = 1
-        
-
-
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "TicTacToe"))
-        #self.pushButton_5.setText(_translate("MainWindow", "X"))
-        self.pushButton_10.setText(_translate("MainWindow", "Play again"))
 
     def checkIfTie(self):
         btn_text_list = []
@@ -193,9 +388,9 @@ class Ui_MainWindow_game(object):
             
         if "" not in btn_text_list:
             self.label.setText("It is a tie!")
-            QtCore.QCoreApplication.processEvents()
+            #QtCore.QCoreApplication.processEvents()
 
-            time.sleep(3)
+            # time.sleep(3)
             #self.clicker_play_again()
 
     def checkifwin(self):
@@ -204,8 +399,8 @@ class Ui_MainWindow_game(object):
             x, y, z = triple
             if self.buttonList[x].text() == self.buttonList[y].text() and self.buttonList[y].text() == self.buttonList[z].text() and self.buttonList[x].text() != '':
                 self.label.setText(f"The winner is {self.buttonList[y].text()}")
-                QtCore.QCoreApplication.processEvents()
-                time.sleep(3)
+                #QtCore.QCoreApplication.processEvents()
+                # time.sleep(3)
                 #self.clicker_play_again()
                 return True
         self.checkIfTie()
@@ -217,7 +412,6 @@ class Ui_MainWindow_game(object):
             if self.buttonList[position].text() == "":
                 self.buttonList[position].setText(self.computer)
                 break
-                
 
     def check_computer_win(self):
         for triple in self.row_triples:
@@ -241,11 +435,13 @@ class Ui_MainWindow_game(object):
                     x = y
                 if self.buttonList[z].text() == '':
                     x = z
-                self.buttonList[x].setText(self.computer)
-                return True
+                print(self.buttonList[x].text())
+                if self.buttonList[x].text() == "":
+                    print(self.buttonList[x].text())
+                    self.buttonList[x].setText(self.computer)
+                    return True
         return False
-    
-    step = 1
+        
     def computer_step_hard_X(self):
         if self.check_computer_win():
             self.step += 1
@@ -253,12 +449,13 @@ class Ui_MainWindow_game(object):
         elif self.check_player_win():
             self.step+=1
             return True
+
         
         #step 1
         if self.step == 1:
             self.buttonList[4].setText("X")
             self.step+=1
-            QtCore.QCoreApplication.processEvents()
+            #QtCore.QCoreApplication.processEvents()
 
             return True
 
@@ -269,34 +466,33 @@ class Ui_MainWindow_game(object):
                 if self.buttonList[corner].text() == 'O':
                     self.buttonList[8 - corner].setText('X')
                     self.step += 1
-                    QtCore.QCoreApplication.processEvents()
-
+                    #QtCore.QCoreApplication.processEvents()
                     return True
 
             if self.buttonList[1].text() == "O" or self.buttonList[7].text() == 'O':
                 x = random.choice([3,5])
                 self.buttonList[x].setText('X')
                 self.step+=1
-                QtCore.QCoreApplication.processEvents()
+                #QtCore.QCoreApplication.processEvents()
 
                 return True
             elif self.buttonList[3].text() == "O" or self.buttonList[5].text() == "O":
                 x = random.choice([1,7])
                 self.buttonList[x].setText('X')
                 self.step+=1
-                QtCore.QCoreApplication.processEvents()
+                #QtCore.QCoreApplication.processEvents()
 
                 return True
             elif self.buttonList[0].text() == "" and self.buttonList[8].text() == "":
                 self.buttonList[0].setText('X')
                 self.step+=1
-                QtCore.QCoreApplication.processEvents()
+                #QtCore.QCoreApplication.processEvents()
 
                 return True
             elif self.buttonList[2].text() == "" and self.buttonList[6].text() == "":
                 self.buttonList[2].setText('X')
                 self.step+=1
-                QtCore.QCoreApplication.processEvents()
+                #QtCore.QCoreApplication.processEvents()
 
                 return True
         
@@ -316,14 +512,14 @@ class Ui_MainWindow_game(object):
                 if self.buttonList[x].text() == "X" and self.buttonList[y].text() == "X" and self.buttonList[z].text() == "":
                     self.buttonList[z].setText('X')
                     self.step += 1
-                    QtCore.QCoreApplication.processEvents()
+                    #QtCore.QCoreApplication.processEvents()
 
                     return True
                 
                 if self.buttonList[x].text() == "X" and self.buttonList[z].text() == "X" and self.buttonList[y].text() == "":
                     self.buttonList[y].setText('X')
                     self.step += 1
-                    QtCore.QCoreApplication.processEvents()
+                    #QtCore.QCoreApplication.processEvents()
 
                     return True
                 
@@ -332,7 +528,7 @@ class Ui_MainWindow_game(object):
             for i in range(len(self.buttonList)):
                 if self.buttonList[i].text() == "":
                     self.buttonList[i].setText('X')
-                    QtCore.QCoreApplication.processEvents()
+                    #QtCore.QCoreApplication.processEvents()
 
                     break
             self.step += 1
@@ -344,7 +540,7 @@ class Ui_MainWindow_game(object):
             for i in range(len(self.buttonList)):
                 if self.buttonList[i].text() == "":
                     self.buttonList[i].setText('X')
-                    QtCore.QCoreApplication.processEvents()
+                    #QtCore.QCoreApplication.processEvents()
 
                     break
             return True
@@ -363,15 +559,13 @@ class Ui_MainWindow_game(object):
             if self.buttonList[4].text() == "":
                 self.buttonList[4].setText('O')
                 self.step += 1
-                QtCore.QCoreApplication.processEvents()
-
+                #QtCore.QCoreApplication.processEvents()
                 return True
             else:
                 x = random.choice([0, 2, 6, 8])
                 self.buttonList[x].setText('O')
                 self.step += 1
-                QtCore.QCoreApplication.processEvents()
-
+                #QtCore.QCoreApplication.processEvents()
                 return True
 
         #step 2
@@ -381,8 +575,7 @@ class Ui_MainWindow_game(object):
                 if self.buttonList[corner] == '':
                     self.buttonList[corner].setText('O')
                     self.step += 1
-                    QtCore.QCoreApplication.processEvents()
-
+                    #QtCore.QCoreApplication.processEvents()
                     return True
             
         #step 3 or 4
@@ -390,13 +583,11 @@ class Ui_MainWindow_game(object):
             for i in range(len(self.buttonList)):
                 if self.buttonList[i].text() == "":
                     self.buttonList[i].setText('O')
-                    QtCore.QCoreApplication.processEvents()
+                    #QtCore.QCoreApplication.processEvents()
                     break
             self.step += 1
             return True
-
-
-
+    
 
     
 
